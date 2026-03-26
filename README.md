@@ -23,14 +23,13 @@ Key goals:
 - Subject input (one subject at a time)
 - Planning mode selection:
   - Exam-Based Planning
-  - Regular Planning
 - Dynamic UI behavior using JavaScript
 - Conditional field rendering
 - Basic input handling and validation
 
 ---
 
-## 🧠 Planned Features (Upcoming)
+## 🧠 Planned Features (Implemented)
 
 - Greedy algorithm for subject prioritization
 - Sorting-based study order optimization
