@@ -1,252 +1,306 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>StudySync - Smart Planner</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudySync - Exam Mode Planner</title>
     <style>
-        body{
-            font-family: Arial;
-            background:#f4f6f9;
-            display:flex;
-            justify-content:center;
-            padding:30px;
+        :root {
+            --bg: #f4f6f9;
+            --card: #ffffff;
+            --text: #333;
+            --primary: #4a6cf7;
+            --border: #ddd;
+            --danger: #ff4d4d;
+            --warning: #ffa500;
+            --success: #4caf50;
         }
 
-        .box{
-            background:white;
-            padding:20px;
-            width:450px;
-            border-radius:12px;
-            box-shadow:0 0 12px rgba(0,0,0,0.12);
+        .dark {
+            --bg: #1e1e2f;
+            --card: #2a2a40;
+            --text: #ffffff;
+            --primary: #6c8cff;
+            --border: #444;
+            --danger: #ff6b6b;
+            --warning: #ffb347;
+            --success: #6fbf6f;
         }
 
-        h2{
-            text-align:center;
-            margin-bottom:15px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        input, select, button{
-            width:100%;
-            padding:8px;
-            margin:6px 0;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            transition: 0.3s;
+            padding: 20px;
         }
 
-        button{
-            background:#4a6cf7;
-            color:white;
-            border:none;
-            border-radius:6px;
-            cursor:pointer;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
-        button:hover{
-            background:#3655d6;
+        .header {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
-        #output{
-            margin-top:15px;
+        h1 {
+            color: var(--primary);
         }
 
-        .card{
-            background:#f9fbff;
-            padding:10px;
-            border-radius:8px;
-            margin-bottom:10px;
-            border-left:5px solid #4a6cf7;
+        .badge {
+            background: var(--primary);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: white;
         }
 
-        .high{ color:red; font-weight:bold; }
-        .medium{ color:orange; font-weight:bold; }
-        .low{ color:green; font-weight:bold; }
-
-        .progress{
-            background:#ddd;
-            border-radius:5px;
-            overflow:hidden;
-            height:10px;
-            margin-top:5px;
+        .theme-btn, .reset-btn {
+            padding: 8px 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-left: 10px;
         }
 
-        .bar{
-            height:10px;
-            background:#4a6cf7;
+        .reset-btn {
+            background: var(--danger);
         }
 
-        #subjectList{
-            background:#f8f8f8;
-            padding:8px;
-            border-radius:6px;
-            font-size:14px;
-            margin-top:8px;
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .card h3 {
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .subject-item {
+            background: var(--bg);
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 3px solid var(--primary);
+        }
+
+        .delete-btn {
+            background: var(--danger);
+            padding: 5px 12px;
+            width: auto;
+            margin: 0;
+        }
+
+        .plan-card {
+            background: var(--bg);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .progress-bar {
+            background: var(--border);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            background: var(--primary);
+            height: 100%;
+            transition: width 0.3s;
+        }
+
+        .priority-high { color: var(--danger); font-weight: bold; }
+        .priority-medium { color: var(--warning); font-weight: bold; }
+        .priority-low { color: var(--success); font-weight: bold; }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: var(--bg);
+            margin: 8px 0;
+            border-radius: 6px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .checklist-item input {
+            width: 20px;
+            margin: 0;
+        }
+
+        .stats {
+            background: var(--bg);
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .warning {
+            color: var(--warning);
+        }
+
+        .success {
+            color: var(--success);
+        }
+
+        .alert {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .alert-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .alert-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .date-info {
+            background: var(--bg);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 StudySync - Exam Mode</h1>
+            <div>
+                <button class="reset-btn" onclick="resetAllData()">🗑️ Reset All Data</button>
+                <button class="theme-btn" onclick="toggleTheme()">🌙 Dark Mode</button>
+            </div>
+        </div>
 
-<div class="box">
+        <div class="date-info" id="dateInfo">
+            📅 Loading date...
+        </div>
 
-    <h2>StudySync</h2>
+        <div class="grid">
+            <!-- Left Panel -->
+            <div>
+                <div class="card">
+                    <h3>➕ Add Subject</h3>
+                    <input type="text" id="subjectName" placeholder="Subject Name">
+                    <select id="difficulty">
+                        <option value="1">Difficulty 1 (Very Easy)</option>
+                        <option value="2">Difficulty 2 (Easy)</option>
+                        <option value="3">Difficulty 3 (Medium)</option>
+                        <option value="4">Difficulty 4 (Hard)</option>
+                        <option value="5">Difficulty 5 (Very Hard)</option>
+                    </select>
+                    <input type="number" id="completion" placeholder="Current Completion %" value="0">
+                    <input type="number" id="daysLeft" placeholder="Days Left for Exam">
+                    <button onclick="addSubject()">➕ Add Subject</button>
+                </div>
 
-    <label>Mode</label>
-    <select id="mode" onchange="toggleDaysField()">
-        <option value="daily">Daily Based</option>
-        <option value="exam">Exam Based</option>
-    </select>
+                <div class="card">
+                    <h3>📋 Your Subjects</h3>
+                    <div id="subjectList"></div>
+                </div>
 
-    <label>College Start Hour</label>
-    <input type="number" id="start">
+                <div class="card">
+                    <h3>⚙️ Daily Routine</h3>
+                    <input type="number" id="collegeStart" placeholder="College Start Hour (0-23)">
+                    <input type="number" id="collegeEnd" placeholder="College End Hour (0-23)">
+                    <input type="number" id="chillTime" placeholder="Chill Time (hours)">
+                    <input type="number" id="sleepTime" placeholder="Sleep Time (hours)">
+                    <button onclick="calculateStudyHours()">Calculate Study Hours</button>
+                    <div id="studyHoursDisplay" class="stats"></div>
+                </div>
+            </div>
 
-    <label>College End Hour</label>
-    <input type="number" id="end">
+            <!-- Right Panel -->
+            <div>
+                <div class="card">
+                    <h3>✅ Daily Check-in</h3>
+                    <div id="dailyChecklist"></div>
+                    <button onclick="submitDailyCheck()">Submit Today's Progress</button>
+                    <div id="checkStatus"></div>
+                </div>
 
-    <label>Chill Time (hrs)</label>
-    <input type="number" id="chill">
-
-    <label>Sleep Time (hrs)</label>
-    <input type="number" id="sleep">
-
-    <hr>
-
-    <h3>Add Subject</h3>
-
-    <label>Subject Name</label>
-    <input type="text" id="subject">
-
-    <label>Difficulty (1-5)</label>
-    <input type="number" id="difficulty">
-
-    <label>Completion %</label>
-    <input type="number" id="completion">
-
-    <div id="daysContainer">
-        <label>Days Left (Exam mode)</label>
-        <input type="number" id="days">
+                <div class="card">
+                    <h3>🎯 Today's Study Plan</h3>
+                    <button onclick="generatePlan()">Generate Plan</button>
+                    <div id="studyPlan"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <button onclick="addSubject()">Add Subject</button>
-
-    <div id="subjectList"><b>Added Subjects:</b><br>None</div>
-
-    <button onclick="generatePlan()">Generate Plan</button>
-
-    <div id="output"></div>
-
-</div>
-
-<script>
-
-let subjects = [];
-
-// ---------- SHOW/HIDE DAYS ----------
-function toggleDaysField(){
-    let mode = document.getElementById("mode").value;
-    document.getElementById("daysContainer").style.display =
-        (mode==="exam") ? "block" : "none";
-}
-
-// ---------- ADD SUBJECT ----------
-function addSubject(){
-
-    let mode = document.getElementById("mode").value;
-    let name = document.getElementById("subject").value;
-    let diff = Number(document.getElementById("difficulty").value);
-    let comp = Number(document.getElementById("completion").value);
-    let days = Number(document.getElementById("days").value);
-
-    if(name==="") return alert("Enter subject name");
-
-    subjects.push({
-        name:name,
-        difficulty:diff,
-        completion:comp,
-        daysLeft:(mode==="exam")?days:0
-    });
-
-    updateSubjectList();
-
-    document.getElementById("subject").value="";
-    document.getElementById("difficulty").value="";
-    document.getElementById("completion").value="";
-    document.getElementById("days").value="";
-}
-
-// ---------- SUBJECT LIST ----------
-function updateSubjectList(){
-
-    let txt="<b>Added Subjects:</b><br>";
-    if(subjects.length===0) txt+="None";
-
-    subjects.forEach(s=>{
-        txt+="• "+s.name+"<br>";
-    });
-
-    document.getElementById("subjectList").innerHTML=txt;
-}
-
-// ---------- PRIORITY LABEL ----------
-function getPriorityLabel(p){
-    if(p>=15) return "<span class='high'>HIGH</span>";
-    if(p>=10) return "<span class='medium'>MEDIUM</span>";
-    return "<span class='low'>LOW</span>";
-}
-
-// ---------- GENERATE PLAN ----------
-function generatePlan(){
-
-    if(subjects.length===0) return alert("Add subjects first!");
-
-    let mode=document.getElementById("mode").value;
-
-    let start=Number(document.getElementById("start").value);
-    let end=Number(document.getElementById("end").value);
-    let chill=Number(document.getElementById("chill").value);
-    let sleep=Number(document.getElementById("sleep").value);
-
-    let college=end-start;
-    if(college<0) college+=24;
-
-    let studyHours=24-college-chill-sleep;
-    if(studyHours<0) studyHours=0;
-
-    subjects.forEach(s=>{
-        if(mode==="daily"){
-            s.priority=s.difficulty*2+(100-s.completion)/10;
-        }else{
-            let urgency=Math.max(0,10-s.daysLeft);
-            s.priority=s.difficulty*2+urgency+(100-s.completion)/10;
-        }
-    });
-
-    subjects.sort((a,b)=>b.priority-a.priority);
-
-    let out="<h3>Auto Study Hours: "+studyHours+" hrs</h3>";
-
-    out+="<h3>Study Plan</h3>";
-
-    let remaining=studyHours;
-
-    subjects.forEach(s=>{
-
-        let alloc=(remaining>0)?Math.min(2,remaining):0;
-        remaining-=alloc;
-
-        out += `
-        <div class="card">
-            <b>${s.name}</b> (${getPriorityLabel(s.priority)})<br>
-            Priority Score: ${s.priority}<br>
-            Suggested Time: ${alloc} hrs
-            <div class="progress">
-                <div class="bar" style="width:${s.completion}%"></div>
-            </div>
-            Completion: ${s.completion}%
-        </div>`;
-    });
-
-    document.getElementById("output").innerHTML=out;
-}
-
-toggleDaysField();
-
-</script>
-
+    <script src="app.js"></script>
 </body>
 </html>
