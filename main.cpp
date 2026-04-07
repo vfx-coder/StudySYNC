@@ -5,6 +5,7 @@
 #include <fstream>
 #include <ctime>
 #include <sstream>
+#include <chrono>
 using namespace std;
 
 struct Subject {
@@ -14,7 +15,7 @@ struct Subject {
     int completion;
     double priority;
     int allocatedTime;
-    string lastUpdated;  // Track last update date
+    string lastUpdated;
 };
 
 // ---------- Get current date as string ----------
@@ -26,6 +27,32 @@ string getCurrentDate() {
        << setw(2) << setfill('0') << 1 + ltm->tm_mon << "-"
        << setw(2) << setfill('0') << ltm->tm_mday;
     return ss.str();
+}
+
+// ---------- Calculate days between two dates ----------
+int daysBetween(string date1, string date2) {
+    tm tm1 = {}, tm2 = {};
+    stringstream ss1(date1), ss2(date2);
+    string year, month, day;
+    
+    getline(ss1, year, '-');
+    getline(ss1, month, '-');
+    getline(ss1, day, '-');
+    tm1.tm_year = stoi(year) - 1900;
+    tm1.tm_mon = stoi(month) - 1;
+    tm1.tm_mday = stoi(day);
+    
+    getline(ss2, year, '-');
+    getline(ss2, month, '-');
+    getline(ss2, day, '-');
+    tm2.tm_year = stoi(year) - 1900;
+    tm2.tm_mon = stoi(month) - 1;
+    tm2.tm_mday = stoi(day);
+    
+    time_t time1 = mktime(&tm1);
+    time_t time2 = mktime(&tm2);
+    
+    return abs(difftime(time2, time1) / (60 * 60 * 24));
 }
 
 // ---------- Save data to file ----------
@@ -72,32 +99,93 @@ void loadData(vector<Subject>& data, const string& filename = "studysync_data.tx
     }
 }
 
-// ---------- Check and update days based on date ----------
+// ---------- Update days based on date (FIXED) ----------
 void updateDaysBasedOnDate(vector<Subject>& data) {
     string currentDate = getCurrentDate();
     bool daysChanged = false;
     
     for (auto& s : data) {
         if (s.lastUpdated != currentDate && s.daysLeft > 0 && s.completion < 100) {
-            // Calculate how many days have passed
-            // For simplicity, we'll decrease by 1 day each time we run
-            // In real scenario, you'd parse dates and calculate difference
-            int oldDays = s.daysLeft;
-            s.daysLeft--;
-            s.lastUpdated = currentDate;
-            daysChanged = true;
-            
-            cout << "  📅 " << s.name << ": " << oldDays << " → " << s.daysLeft << " days left";
-            if (s.daysLeft <= 0) {
-                cout << " ⚠️ EXAM TOMORROW!";
+            int daysPassed = daysBetween(s.lastUpdated, currentDate);
+            if (daysPassed > 0) {
+                int oldDays = s.daysLeft;
+                s.daysLeft = max(0, s.daysLeft - daysPassed);
+                s.lastUpdated = currentDate;
+                daysChanged = true;
+                
+                cout << "  📅 " << s.name << ": " << oldDays << " → " << s.daysLeft << " days left (" << daysPassed << " day(s) passed)";
+                if (s.daysLeft <= 0) {
+                    cout << " ⚠️ EXAM TOMORROW!";
+                }
+                cout << endl;
             }
-            cout << endl;
         }
     }
     
     if (daysChanged) {
         saveData(data);
         cout << "\n✅ Days updated for new day!\n";
+    }
+}
+
+// ---------- Delete subject (NEW FEATURE) ----------
+void deleteSubject(vector<Subject>& data) {
+    if (data.empty()) {
+        cout << "No subjects to delete.\n";
+        return;
+    }
+    
+    cout << "\nSubjects:\n";
+    for (size_t i = 0; i < data.size(); i++) {
+        cout << "  " << i + 1 << ". " << data[i].name << endl;
+    }
+    
+    int index;
+    cout << "Enter subject number to delete (0 to cancel): ";
+    cin >> index;
+    
+    if (index > 0 && index <= data.size()) {
+        cout << "Deleted: " << data[index - 1].name << endl;
+        data.erase(data.begin() + index - 1);
+        saveData(data);
+    }
+}
+
+// ---------- Edit subject (NEW FEATURE) ----------
+void editSubject(vector<Subject>& data) {
+    if (data.empty()) {
+        cout << "No subjects to edit.\n";
+        return;
+    }
+    
+    cout << "\nSubjects:\n";
+    for (size_t i = 0; i < data.size(); i++) {
+        cout << "  " << i + 1 << ". " << data[i].name 
+             << " (Progress: " << data[i].completion << "%, Days: " << data[i].daysLeft << ")\n";
+    }
+    
+    int index;
+    cout << "Enter subject number to edit (0 to cancel): ";
+    cin >> index;
+    
+    if (index > 0 && index <= data.size()) {
+        Subject& s = data[index - 1];
+        cout << "\nEditing: " << s.name << endl;
+        cout << "New name (current: " << s.name << "): ";
+        cin.ignore();
+        getline(cin, s.name);
+        
+        cout << "New difficulty 1-5 (current: " << s.difficulty << "): ";
+        cin >> s.difficulty;
+        
+        cout << "New completion % (current: " << s.completion << "): ";
+        cin >> s.completion;
+        
+        cout << "New days left (current: " << s.daysLeft << "): ";
+        cin >> s.daysLeft;
+        
+        saveData(data);
+        cout << "✅ Subject updated!\n";
     }
 }
 
@@ -144,11 +232,13 @@ void displaySubjects(const vector<Subject>& data) {
     cout << "\n📋 Current Subjects:\n";
     cout << string(60, '-') << "\n";
     for (auto& s : data) {
-        cout << "  " << s.name << " | Difficulty: " << s.difficulty
+        cout << "  " << s.name << " | Difficulty: " << s.difficulty << "/5"
              << " | Progress: " << s.completion << "%"
              << " | Days left: " << s.daysLeft;
         if (s.completion >= 100) {
             cout << " ✅ COMPLETED";
+        } else if (s.daysLeft <= 0) {
+            cout << " ⚠️ EXAM TODAY!";
         }
         cout << endl;
     }
@@ -158,18 +248,18 @@ void displaySubjects(const vector<Subject>& data) {
 // ---------- Main function ----------
 int main() {
     int choice;
-    int collegeStart, collegeEnd;
-    int chillTime, sleepTime;
     
     cout << "===== Welcome to StudySync (Exam Mode) =====\n";
+    cout << "🎯 Smart Study Planner with Priority System\n\n";
     cout << "1. Start New Session\n";
     cout << "2. Load Previous Session\n";
+    cout << "3. Manage Subjects (Edit/Delete)\n";
     cout << "Enter choice: ";
     cin >> choice;
     
     vector<Subject> data;
     
-    if (choice == 2) {
+    if (choice == 2 || choice == 3) {
         loadData(data);
         if (data.empty()) {
             cout << "No saved data found. Starting new session...\n";
@@ -179,21 +269,29 @@ int main() {
             cout << "Checking for date changes...\n";
             updateDaysBasedOnDate(data);
             displaySubjects(data);
+            
+            if (choice == 3) {
+                int manageChoice;
+                cout << "\n1. Delete Subject\n2. Edit Subject\nEnter choice: ";
+                cin >> manageChoice;
+                if (manageChoice == 1) deleteSubject(data);
+                else if (manageChoice == 2) editSubject(data);
+                else cout << "Invalid choice\n";
+            }
         }
     }
     
     if (choice == 1 || data.empty()) {
         // ===== DAILY ROUTINE =====
+        int collegeStart, collegeEnd, chillTime, sleepTime;
+        
         cout << "\n--- Daily Routine Setup ---\n";
         cout << "College start hour (0-23): ";
         cin >> collegeStart;
-
         cout << "College end hour (0-23): ";
         cin >> collegeEnd;
-
         cout << "Daily chill/personal time (hours): ";
         cin >> chillTime;
-
         cout << "Daily sleep time (hours): ";
         cin >> sleepTime;
 
@@ -221,13 +319,10 @@ int main() {
             cout << "\n--- Subject " << i + 1 << " ---\n";
             cout << "Name: ";
             cin >> data[i].name;
-
             cout << "Difficulty (1-5, 5=Hardest): ";
             cin >> data[i].difficulty;
-
             cout << "Current Completion % (0-100): ";
             cin >> data[i].completion;
-
             cout << "Days left for exam: ";
             cin >> data[i].daysLeft;
             
@@ -235,7 +330,6 @@ int main() {
             data[i].priority = 0;
             data[i].lastUpdated = currentDate;
             
-            // Validation
             if (data[i].completion < 0) data[i].completion = 0;
             if (data[i].completion > 100) data[i].completion = 100;
             if (data[i].daysLeft < 0) data[i].daysLeft = 0;
@@ -273,7 +367,7 @@ int main() {
     cout << string(50, '=') << "\n";
     
     vector<int> studiedIndices;
-    for (int i = 0; i < data.size(); i++) {
+    for (size_t i = 0; i < data.size(); i++) {
         if (data[i].completion < 100 && data[i].daysLeft > 0) {
             char studied;
             cout << "Did you study " << data[i].name << " today? (y/n): ";
@@ -284,15 +378,13 @@ int main() {
         }
     }
     
-    // Update completion for studied subjects
     for (int idx : studiedIndices) {
         int oldCompletion = data[idx].completion;
-        data[idx].completion += 20;  // 2 hours of study
+        data[idx].completion += 20;
         if (data[idx].completion > 100) data[idx].completion = 100;
         cout << "\n✅ " << data[idx].name << ": " << oldCompletion << "% → " << data[idx].completion << "%\n";
     }
     
-    // Update last updated date
     string today = getCurrentDate();
     for (auto& s : data) {
         s.lastUpdated = today;
@@ -302,19 +394,16 @@ int main() {
     
     // ===== GENERATE STUDY PLAN =====
     cout << "\n" << string(50, '=') << "\n";
-    cout << "📚 TODAY'S STUDY PLAN\n";
+    cout << "📚 TODAY'S SMART STUDY PLAN\n";
     cout << string(50, '=') << "\n";
     
-    // Calculate priorities
     for (auto& s : data) {
         s.priority = calculatePriority(s);
         s.allocatedTime = 0;
     }
     
-    // Sort by priority
     sort(data.begin(), data.end(), comparePriority);
     
-    // Show priority order
     cout << "\n🎯 Priority Order:\n";
     for (auto& s : data) {
         if (s.priority >= 0 && s.completion < 100) {
@@ -325,7 +414,6 @@ int main() {
         }
     }
     
-    // Distribute time
     int remainingHours = totalStudyHours;
     vector<Subject*> activeSubjects;
     double totalPriority = 0;
@@ -352,10 +440,9 @@ int main() {
         }
     }
     
-    // Distribute remaining hours
     if (remainingHours > 0 && !activeSubjects.empty()) {
         int index = 0;
-        while (remainingHours > 0 && index < activeSubjects.size() * 2) {
+        while (remainingHours > 0 && index < (int)activeSubjects.size() * 2) {
             Subject* s = activeSubjects[index % activeSubjects.size()];
             int hoursNeeded = (100 - s->completion + 9) / 10;
             if (s->allocatedTime < hoursNeeded) {
@@ -366,8 +453,7 @@ int main() {
         }
     }
     
-    // Display study plan
-    cout << "\n📖 STUDY PLAN:\n";
+    cout << "\n📖 YOUR STUDY PLAN:\n";
     int totalAllocated = 0;
     
     for (auto& s : data) {
@@ -400,7 +486,6 @@ int main() {
     
     cout << "\n⏱️  Time Usage: " << totalAllocated << " / " << totalStudyHours << " hours\n";
     
-    // Final status
     cout << "\n" << string(50, '=') << "\n";
     cout << "📊 FINAL STATUS\n";
     cout << string(50, '=') << "\n";
@@ -423,13 +508,13 @@ int main() {
         cout << endl;
     }
     
-    // Save final data
     saveData(data);
     
     cout << "\n💡 Next Steps:\n";
     cout << "  • Run the program again tomorrow for automatic day reduction\n";
     cout << "  • Data will be saved and loaded automatically\n";
-    cout << "  • Days left will decrease when date changes\n";
+    cout << "  • Use option 3 from main menu to edit/delete subjects\n";
+    cout << "\n✨ Keep studying! Consistency is key! ✨\n";
     
     return 0;
 }
