@@ -3,28 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudySync - Exam Mode Planner</title>
+    <title>StudySync - Exam Mode Planner | Smart Study Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg: #f4f6f9;
-            --card: #ffffff;
+            --bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
             --text: #333;
-            --primary: #4a6cf7;
-            --border: #ddd;
-            --danger: #ff4d4d;
-            --warning: #ffa500;
-            --success: #4caf50;
+            --primary: #667eea;
+            --primary-dark: #5a67d8;
+            --border: #e2e8f0;
+            --danger: #f56565;
+            --warning: #ed8936;
+            --success: #48bb78;
+            --shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
         }
 
         .dark {
-            --bg: #1e1e2f;
-            --card: #2a2a40;
-            --text: #ffffff;
-            --primary: #6c8cff;
-            --border: #444;
-            --danger: #ff6b6b;
-            --warning: #ffb347;
-            --success: #6fbf6f;
+            --card-bg: rgba(26, 32, 44, 0.95);
+            --text: #f7fafc;
+            --border: #4a5568;
+            --primary: #9f7aea;
+            --primary-dark: #805ad5;
         }
 
         * {
@@ -34,251 +35,493 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
             background: var(--bg);
             color: var(--text);
-            transition: 0.3s;
+            transition: var(--transition);
+            min-height: 100vh;
             padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.1);
+            pointer-events: none;
+            z-index: -1;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
+        /* Header Styles */
         .header {
-            background: var(--card);
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            padding: 25px 30px;
+            border-radius: 20px;
+            margin-bottom: 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow);
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--primary), #764ba2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h1 i {
             color: var(--primary);
+            font-size: 2rem;
         }
 
         .badge {
-            background: var(--primary);
-            padding: 5px 12px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            padding: 5px 15px;
             border-radius: 20px;
             font-size: 12px;
             color: white;
+            font-weight: 500;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
         }
 
         .theme-btn, .reset-btn {
-            padding: 8px 16px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .theme-btn {
             background: var(--primary);
             color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-left: 10px;
         }
 
         .reset-btn {
             background: var(--danger);
+            color: white;
         }
 
+        .theme-btn:hover, .reset-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(110%);
+        }
+
+        /* Date Card */
+        .date-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            padding: 15px 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Grid Layout */
         .grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+            animation: fadeIn 0.8s ease;
         }
 
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Card Styles */
         .card {
-            background: var(--card);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 30px -10px rgba(0,0,0,0.2);
         }
 
         .card h3 {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
             color: var(--primary);
         }
 
+        /* Form Elements */
         input, select, button {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin: 8px 0;
-            border: 1px solid var(--border);
-            background: var(--card);
+            border: 2px solid var(--border);
+            background: var(--card-bg);
             color: var(--text);
-            border-radius: 6px;
+            border-radius: 10px;
             font-size: 14px;
+            transition: var(--transition);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         button {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
             border: none;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
+            font-size: 15px;
         }
 
-        button:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
+        button:active {
+            transform: scale(0.98);
         }
 
+        /* Subject Items */
         .subject-item {
-            background: var(--bg);
-            padding: 12px;
-            margin: 8px 0;
-            border-radius: 6px;
+            background: rgba(102, 126, 234, 0.1);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-left: 3px solid var(--primary);
+            border-left: 4px solid var(--primary);
+            transition: var(--transition);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .subject-item:hover {
+            transform: translateX(5px);
+            background: rgba(102, 126, 234, 0.2);
         }
 
         .delete-btn {
             background: var(--danger);
-            padding: 5px 12px;
+            padding: 8px 15px;
             width: auto;
             margin: 0;
+            font-size: 12px;
         }
 
+        /* Plan Cards */
         .plan-card {
-            background: var(--bg);
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.1));
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 15px;
             border-left: 4px solid var(--primary);
+            transition: var(--transition);
+            animation: fadeInUp 0.4s ease;
         }
 
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .plan-card:hover {
+            transform: scale(1.02);
+        }
+
+        /* Progress Bar */
         .progress-bar {
             background: var(--border);
-            height: 8px;
-            border-radius: 4px;
+            height: 10px;
+            border-radius: 10px;
             overflow: hidden;
             margin: 10px 0;
         }
 
         .progress-fill {
-            background: var(--primary);
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
             height: 100%;
-            transition: width 0.3s;
+            transition: width 0.5s ease;
+            border-radius: 10px;
         }
 
-        .priority-high { color: var(--danger); font-weight: bold; }
-        .priority-medium { color: var(--warning); font-weight: bold; }
-        .priority-low { color: var(--success); font-weight: bold; }
-
+        /* Checklist */
         .checklist-item {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 12px;
-            background: var(--bg);
-            margin: 8px 0;
-            border-radius: 6px;
-            border-left: 3px solid var(--primary);
+            gap: 15px;
+            padding: 15px;
+            background: rgba(102, 126, 234, 0.1);
+            margin: 10px 0;
+            border-radius: 12px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .checklist-item:hover {
+            background: rgba(102, 126, 234, 0.2);
+            transform: translateX(5px);
         }
 
         .checklist-item input {
-            width: 20px;
+            width: 22px;
+            height: 22px;
             margin: 0;
+            cursor: pointer;
         }
 
+        /* Priority Colors */
+        .priority-high { 
+            color: var(--danger); 
+            font-weight: bold;
+            background: rgba(245,101,101,0.2);
+            padding: 3px 10px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        .priority-medium { 
+            color: var(--warning); 
+            font-weight: bold;
+            background: rgba(237,137,54,0.2);
+            padding: 3px 10px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        .priority-low { 
+            color: var(--success); 
+            font-weight: bold;
+            background: rgba(72,187,120,0.2);
+            padding: 3px 10px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        /* Stats */
         .stats {
-            background: var(--bg);
-            padding: 12px;
-            border-radius: 6px;
-            margin-top: 10px;
+            background: linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.1));
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 15px;
             text-align: center;
+            font-weight: 500;
         }
 
-        .warning {
-            color: var(--warning);
-        }
+        .warning { color: var(--warning); }
+        .success { color: var(--success); }
 
-        .success {
-            color: var(--success);
-        }
-
+        /* Alert */
         .alert {
-            padding: 10px;
-            border-radius: 6px;
+            padding: 12px;
+            border-radius: 10px;
             margin: 10px 0;
             text-align: center;
+            animation: slideInRight 0.3s ease;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         .alert-success {
-            background: var(--success);
+            background: linear-gradient(135deg, var(--success), #38a169);
             color: white;
         }
 
         .alert-warning {
-            background: var(--warning);
+            background: linear-gradient(135deg, var(--warning), #dd6b20);
             color: white;
         }
 
-        .date-info {
-            background: var(--bg);
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 15px;
+        /* Empty State */
+        .empty-state {
             text-align: center;
-            font-size: 14px;
+            padding: 40px;
+            color: var(--text);
+            opacity: 0.7;
         }
 
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
             .grid {
                 grid-template-columns: 1fr;
             }
+            
+            h1 {
+                font-size: 1.3rem;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .btn-group {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--border);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        /* Floating Animation */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>📚 StudySync - Exam Mode</h1>
-            <div>
-                <button class="reset-btn" onclick="resetAllData()">🗑️ Reset All Data</button>
-                <button class="theme-btn" onclick="toggleTheme()">🌙 Dark Mode</button>
+            <h1>
+                <i class="fas fa-graduation-cap"></i>
+                StudySync - Exam Mode
+                <span class="badge">Smart Study Planner</span>
+            </h1>
+            <div class="btn-group">
+                <button class="reset-btn" onclick="resetAllData()">
+                    <i class="fas fa-trash-alt"></i> Reset All
+                </button>
+                <button class="theme-btn" onclick="toggleTheme()">
+                    <i class="fas fa-moon"></i> Dark Mode
+                </button>
             </div>
         </div>
 
-        <div class="date-info" id="dateInfo">
-            📅 Loading date...
+        <div class="date-card" id="dateInfo">
+            <i class="fas fa-calendar-alt"></i> Loading date...
         </div>
 
         <div class="grid">
             <!-- Left Panel -->
             <div>
                 <div class="card">
-                    <h3>➕ Add Subject</h3>
-                    <input type="text" id="subjectName" placeholder="Subject Name">
+                    <h3><i class="fas fa-plus-circle"></i> Add New Subject</h3>
+                    <input type="text" id="subjectName" placeholder="📖 Subject Name" autocomplete="off">
                     <select id="difficulty">
-                        <option value="1">Difficulty 1 (Very Easy)</option>
-                        <option value="2">Difficulty 2 (Easy)</option>
-                        <option value="3">Difficulty 3 (Medium)</option>
-                        <option value="4">Difficulty 4 (Hard)</option>
-                        <option value="5">Difficulty 5 (Very Hard)</option>
+                        <option value="1">⭐ Difficulty 1 (Very Easy)</option>
+                        <option value="2">⭐⭐ Difficulty 2 (Easy)</option>
+                        <option value="3">⭐⭐⭐ Difficulty 3 (Medium)</option>
+                        <option value="4">⭐⭐⭐⭐ Difficulty 4 (Hard)</option>
+                        <option value="5">⭐⭐⭐⭐⭐ Difficulty 5 (Very Hard)</option>
                     </select>
-                    <input type="number" id="completion" placeholder="Current Completion %" value="0">
-                    <input type="number" id="daysLeft" placeholder="Days Left for Exam">
-                    <button onclick="addSubject()">➕ Add Subject</button>
+                    <input type="number" id="completion" placeholder="📊 Current Completion % (0-100)" value="0" min="0" max="100">
+                    <input type="number" id="daysLeft" placeholder="📅 Days Left for Exam" min="1">
+                    <button onclick="addSubject()">
+                        <i class="fas fa-save"></i> Add Subject
+                    </button>
                 </div>
 
                 <div class="card">
-                    <h3>📋 Your Subjects</h3>
+                    <h3><i class="fas fa-list"></i> Your Subjects</h3>
                     <div id="subjectList"></div>
                 </div>
 
                 <div class="card">
-                    <h3>⚙️ Daily Routine</h3>
-                    <input type="number" id="collegeStart" placeholder="College Start Hour (0-23)">
-                    <input type="number" id="collegeEnd" placeholder="College End Hour (0-23)">
-                    <input type="number" id="chillTime" placeholder="Chill Time (hours)">
-                    <input type="number" id="sleepTime" placeholder="Sleep Time (hours)">
-                    <button onclick="calculateStudyHours()">Calculate Study Hours</button>
+                    <h3><i class="fas fa-clock"></i> Daily Routine Setup</h3>
+                    <input type="number" id="collegeStart" placeholder="🏫 College Start Hour (0-23)" min="0" max="23">
+                    <input type="number" id="collegeEnd" placeholder="🏠 College End Hour (0-23)" min="0" max="23">
+                    <input type="number" id="chillTime" placeholder="🎮 Chill/Personal Time (hours)" min="0">
+                    <input type="number" id="sleepTime" placeholder="😴 Sleep Time (hours)" min="0">
+                    <button onclick="calculateStudyHours()">
+                        <i class="fas fa-calculator"></i> Calculate Study Hours
+                    </button>
                     <div id="studyHoursDisplay" class="stats"></div>
                 </div>
             </div>
@@ -286,15 +529,19 @@
             <!-- Right Panel -->
             <div>
                 <div class="card">
-                    <h3>✅ Daily Check-in</h3>
+                    <h3><i class="fas fa-check-circle"></i> Daily Check-in</h3>
                     <div id="dailyChecklist"></div>
-                    <button onclick="submitDailyCheck()">Submit Today's Progress</button>
+                    <button onclick="submitDailyCheck()">
+                        <i class="fas fa-upload"></i> Submit Today's Progress
+                    </button>
                     <div id="checkStatus"></div>
                 </div>
 
                 <div class="card">
-                    <h3>🎯 Today's Study Plan</h3>
-                    <button onclick="generatePlan()">Generate Plan</button>
+                    <h3><i class="fas fa-chalkboard-teacher"></i> Today's Smart Study Plan</h3>
+                    <button onclick="generatePlan()">
+                        <i class="fas fa-magic"></i> Generate AI-Powered Plan
+                    </button>
                     <div id="studyPlan"></div>
                 </div>
             </div>
